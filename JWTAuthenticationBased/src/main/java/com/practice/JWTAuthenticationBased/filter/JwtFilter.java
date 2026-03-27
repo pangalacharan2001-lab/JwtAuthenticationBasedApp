@@ -39,10 +39,18 @@ public class JwtFilter extends OncePerRequestFilter{
 
                 if(username !=null && SecurityContextHolder.getContext().getAuthentication() ==null){
                     UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
+                    String roleFromDB= userDetails.getAuthorities().iterator().next().getAuthority();
                     if(jwtUtil.validateToken(token, userDetails)){
-                        UsernamePasswordAuthenticationToken authenticationToken= 
+                        System.out.println("Token is Valid..Checking Admin access");
+                        if(roleFromDB.equals(jwtUtil.extractRole(token)))
+                        {
+                            UsernamePasswordAuthenticationToken authenticationToken= 
                                 new UsernamePasswordAuthenticationToken(username, null, userDetails.getAuthorities());
-                        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                        }
+                        else{
+                            System.out.println("Token is Valid....But Token does not have ADMIN access");
+                        }
                     }
                     else{
                         System.out.println("Token is Invalid");

@@ -30,7 +30,8 @@ public class AppConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/authentication/auth").permitAll()
-                .requestMatchers("/authentication/hello").authenticated()
+                .requestMatchers("/authentication/admin").hasRole("ADMIN")
+                .requestMatchers("/authentication/user").hasRole("USER")
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
