@@ -5,7 +5,9 @@ import java.util.Date;
 import javax.crypto.SecretKey;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.core.userdetails.UserDetails;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
@@ -21,5 +23,36 @@ public class JwtUtil {
                 .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))
                 .signWith(key)
                 .compact();
+    }
+
+    public Claims extractClaims(String token){
+        System.out.println("Extracting claims starts ...");
+        return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+
+    public String extractUsername(String token){
+        System.out.println("Extracting name from token starts...");
+        return extractClaims(token).getSubject();
+    }
+
+    public boolean validateToken(String token, UserDetails userDetails){
+        System.out.println("Validating token starts...");
+        Claims claims = extractClaims(token);
+        System.out.println("Name: "+claims.getSubject());
+        System.out.println("Issued At: "+claims.getIssuedAt());
+        System.out.println("Expiration At: "+claims.getExpiration());
+        String username = extractUsername(token);
+        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+    }
+
+    public boolean isTokenExpired(String token)
+    {
+        System.out.println("Checking token Expiration...");
+        Date expriration = extractClaims(token).getExpiration();
+        return expriration.before(new Date());
     }
 }

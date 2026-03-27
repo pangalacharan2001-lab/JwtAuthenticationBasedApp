@@ -10,19 +10,29 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.practice.JWTAuthenticationBased.filter.JwtFilter;
 
 @Configuration
 @EnableWebSecurity
 public class AppConfig {
+
+    private JwtFilter jwtFilter;
+    
+    public AppConfig(JwtFilter jwtFilter) {
+        this.jwtFilter = jwtFilter;
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/authentication/auth").permitAll()
-                .anyRequest().authenticated()
+                .requestMatchers("/authentication/hello").authenticated()
             )
-            .httpBasic(Customizer.withDefaults());
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
